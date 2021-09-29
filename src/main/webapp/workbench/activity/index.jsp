@@ -285,7 +285,7 @@ request.getServerPort() + request.getContextPath() + "/";
                 $.each(reg.list,function (i,n) {
                     str+='<tr class="active">'
                     str+='<td><input type="checkbox" value="'+n.id+'" name="checkboksigle" /></td>'
-                    str+='<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/activity/detail.jsp\';">'+n.name+'</a></td>'
+                    str+='<td><a style="text-decoration: none; cursor: pointer;" onclick="window.location.href=\'workbench/activity/detail.do?id='+n.id+'\';">'+n.name+'</a></td>'
                     str+='<td>'+n.owner+'</td>'
                     str+='<td>'+n.startDate+'</td>'
                     str+='<td>'+n.endDate+'</td>'

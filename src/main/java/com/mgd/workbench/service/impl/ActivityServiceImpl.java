@@ -6,6 +6,7 @@ import com.mgd.settings.dao.UserDao;
 import com.mgd.workbench.dao.ActivityDao;
 import com.mgd.workbench.dao.ActivityRemarkDao;
 import com.mgd.workbench.domain.Activity;
+import com.mgd.workbench.domain.ActivityRemark;
 import com.mgd.workbench.service.ActivityService;
 import com.mgd.workbench.vo.ActivityVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,52 @@ public class ActivityServiceImpl implements ActivityService {
         map.put("flag",flag);
 
         return map;
+    }
+
+    public Activity detail(String id){
+
+        Activity activity=activityDao.detail(id);
+
+        return activity;
+    }
+
+    @Override
+    public List selectActivityRemart(String id) {
+        List list=activityRemarkDao.selectActivityRemart(id);
+        return list;
+    }
+
+    @Override
+    public boolean remarkRemove(String id) {
+
+         boolean flag=false;
+         int num=activityRemarkDao.remarkRemove(id);
+         if (num!=0){
+             flag=true;
+         }
+        return flag;
+    }
+
+    @Override
+    public boolean saveRemark(ActivityRemark activityRemark) {
+        boolean flag=false;
+        int num=activityRemarkDao.saveRemark(activityRemark);
+
+        if (num!=0){
+            flag=true;
+        }
+        return flag;
+    }
+
+    @Override
+    public boolean updateRemark(ActivityRemark activityRemark) {
+        boolean flag=false;
+        int num=activityRemarkDao.updateRemark(activityRemark);
+
+        if (num!=0){
+            flag=true;
+        }
+        return flag;
     }
 
 

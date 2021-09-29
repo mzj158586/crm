@@ -5,6 +5,7 @@ import com.mgd.settings.domain.User;
 import com.mgd.utils.DateTimeUtil;
 import com.mgd.utils.UUIDUtil;
 import com.mgd.workbench.domain.Activity;
+import com.mgd.workbench.domain.ActivityRemark;
 import com.mgd.workbench.service.ActivityService;
 import com.mgd.workbench.vo.ActivityVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +108,79 @@ public class ActivityController {
 
     }
 
+    @RequestMapping("/detail")
+    public String  detail(String id,HttpServletRequest request){
+
+        Activity activity= activityService.detail(id);
+        request.setAttribute("activity",activity);
+
+        return "/workbench/activity/detail.jsp";
+
+    }
+
+    @RequestMapping("/selectActivityRemart")
+    @ResponseBody
+    public List selectActivityRemart(String id){
+        System.out.println(11);
+        List<ActivityRemark> list=activityService.selectActivityRemart(id);
+
+        for (ActivityRemark activityRemark :list
+                ) {
+            System.out.println(activityRemark);
+        }
+
+
+        return list;
+    }
+
+
+    @RequestMapping("/remarkRemove")
+    @ResponseBody
+    public Map<String,Object> remarkRemove(String id ){
+        Map<String,Object> map =new HashMap<>();
+
+        boolean flag=activityService.remarkRemove(id);
+        map.put("flag",flag);
+        System.out.println(11);
+        System.out.println(flag);
+        return map;
+
+    }
+    @RequestMapping("/saveRemark")
+    @ResponseBody
+    public Map<String,Object> saveRemark(ActivityRemark activityRemark,HttpServletRequest request){
+        String id = UUIDUtil.getUUID();
+        activityRemark.setId(id);
+        String sysTime = DateTimeUtil.getSysTime();
+        activityRemark.setCreateTime(sysTime);
+        Map<String,Object> map= new HashMap<>();
+        User user = (User) request.getSession().getAttribute("user");
+        String createBy = user.getName();
+        activityRemark.setCreateBy(createBy);
+        activityRemark.setEditFlag("0");
+        boolean flag=activityService.saveRemark(activityRemark);
+        map.put("flag",flag);
+        map.put("activityRemark",activityRemark);
+        return map;
+
+    }
+
+    @RequestMapping("/updateRemark")
+    @ResponseBody
+    public  Map<String,Object> updateRemark(ActivityRemark activityRemark,HttpServletRequest request){
+
+        User user = (User) request.getSession().getAttribute("user");
+        activityRemark.setEditBy(user.getName());
+        activityRemark.setEditTime(DateTimeUtil.getSysTime());
+        activityRemark.setEditFlag("1");
+         boolean flag=activityService.updateRemark(activityRemark);
+        Map<String,Object> map =new HashMap<>();
+        map.put("flag",flag);
+        System.out.println(flag);
+        map.put("activityRemark",activityRemark);
+        return map;
+
+    }
 
 
 }

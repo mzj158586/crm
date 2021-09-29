@@ -2,6 +2,7 @@ package com.mgd.workbench.service;
 
 import com.github.pagehelper.PageInfo;
 import com.mgd.workbench.domain.Activity;
+import com.mgd.workbench.domain.ActivityRemark;
 import com.mgd.workbench.vo.ActivityVo;
 
 import java.util.List;
@@ -27,4 +28,14 @@ public interface ActivityService {
 
     Map<String,Object> selectById(String id);
     Map<String,Object> updateActivity(Activity activity);
+
+    Activity detail(String id);
+
+    List selectActivityRemart(String id);
+
+    boolean remarkRemove(String id);
+
+    boolean saveRemark(ActivityRemark activityRemark);
+
+    boolean updateRemark(ActivityRemark activityRemark);
 }

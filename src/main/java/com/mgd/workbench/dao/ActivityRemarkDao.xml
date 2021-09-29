@@ -23,4 +23,32 @@
 
     </delete>
 
+    <select id="selectActivityRemart" resultType="com.mgd.workbench.domain.ActivityRemark">
+
+        select * from tbl_activity_remark where activityId=#{id}
+
+
+    </select>
+
+    <delete id="remarkRemove">
+
+      delete  from tbl_activity_remark where id=#{id}
+
+    </delete>
+
+    <insert id="saveRemark">
+
+        insert into tbl_activity_remark
+        (id ,noteContent,createTime,createBy,editFlag ,activityId )
+        values (#{id} ,#{noteContent},#{createTime},#{createBy},#{editFlag} ,#{activityId })
+
+    </insert>
+
+    <update id="updateRemark">
+
+        update tbl_activity_remark set noteContent=#{noteContent},editTime=#{editTime},editBy=#{editBy},editFlag=#{editFlag}  where id=#{id}
+
+    </update>
+
+
 </mapper>
