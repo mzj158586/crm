@@ -22,7 +22,28 @@ request.getServerPort() + request.getContextPath() + "/";
 <script type="text/javascript">
 
 	$(function(){
-		
+
+        $("#addBtn").click(function () {
+
+            $.ajax({
+                url:"workbench/clue/getUserList.do",
+                dataType:"json",
+                type:"get",
+                success:function (reg) {
+
+
+
+                }
+
+
+
+            })
+
+
+        })
+
+
+
 		
 		
 	});
@@ -446,7 +467,7 @@ request.getServerPort() + request.getContextPath() + "/";
 			</div>
 			<div class="btn-toolbar" role="toolbar" style="background-color: #F7F7F7; height: 50px; position: relative;top: 40px;">
 				<div class="btn-group" style="position: relative; top: 18%;">
-				  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createClueModal"><span class="glyphicon glyphicon-plus"></span> 创建</button>
+				  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createClueModal"  id="addBtn"><span class="glyphicon glyphicon-plus" ></span> 创建</button>
 				  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#editClueModal"><span class="glyphicon glyphicon-pencil"></span> 修改</button>
 				  <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> 删除</button>
 				</div>
