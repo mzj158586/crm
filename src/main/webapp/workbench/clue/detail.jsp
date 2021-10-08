@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 String basePath = request.getScheme() + "://" + request.getServerName() + ":" +
 request.getServerPort() + request.getContextPath() + "/";
@@ -21,6 +22,15 @@ request.getServerPort() + request.getContextPath() + "/";
 	var cancelAndSaveBtnDefault = true;
 	
 	$(function(){
+
+        $("#remarkBody").on("mouseover",".remarkDiv",function(){
+            $(this).children("div").children("div").show();
+        })
+        $("#remarkBody").on("mouseout",".remarkDiv",function(){
+            $(this).children("div").children("div").hide();
+        })
+
+
 		$("#remark").focus(function(){
 			if(cancelAndSaveBtnDefault){
 				//设置remarkDiv的高度为130px
@@ -54,9 +64,184 @@ request.getServerPort() + request.getContextPath() + "/";
 		$(".myHref").mouseout(function(){
 			$(this).children("span").css("color","#E6E6E6");
 		});
+
+		showRemark()
+        showRaltation()
+
+        $("#aname").keydown(function (event) {
+
+            if(event.keyCode==13){
+
+                //查询未关联的市场活动
+                $.ajax({
+
+                    url:"workbench/clue/getActivityByName.do",
+                    data:{
+                        "clueId":'${clue.id}',
+                        "activityName":$.trim($("#aname").val())
+
+                    },
+                    dataType:"json",
+                    type:"get",
+                    success:function (reg) {
+
+                        var str="";
+                        $.each(reg,function (i,n) {
+                             str+='<tr>';
+                             str+=' <td><input type="checkbox" name="sc"  value="'+n.id+'" /></td>';
+                             str+='<td>'+n.name+'</td>';
+                             str+='<td>'+n.startDate+'</td>';
+                             str+='<td>'+n.endDate+'</td>';
+                             str+='<td>'+n.owner+'</td>';
+                             str+='</tr>  ';
+
+                        })
+
+                        $("#activity_tbody").html(str)
+
+                    }
+
+
+
+                })
+                return false;
+
+            }
+
+        })
+
+        $("#relationBtn").click(function () {
+
+            var ids=$("input[name=sc]:checked")
+            if (ids.length==0){
+                alert("请选择关联项")
+            } else {
+                var id=""
+                $.each(ids,function (i,n) {
+                    id+=$(n).val()+","
+                })
+               $.ajax({
+                   url:"workbench/clue/addRelation.do",
+                   data:{
+                     "activityId":id,
+                       "clueId":'${clue.id}'
+                   },
+                   dataType:"json",
+                   type:"post",
+                   success:function (reg) {
+
+                       if (reg.flag){
+
+                           alert("关联成功")
+                           $("#aname").val("")
+                           showRaltation()
+
+                       }
+
+                   }
+
+               })
+            }
+
+        })
+
+
 	});
+
+	function showRemark() {
+
+	    $.ajax({
+            url:"workbench/clue/showRemark.do",
+            data:{"clueId":'${clue.id}'},
+            dataType:"json",
+            type:"get",
+            success:function (reg) {
+                var str="";
+
+                $.each(reg,function (i,n) {
+
+                  str+='<div class="remarkDiv" style="height: 60px;">';
+                  str+='<img title="zhangsan" src="image/user-thumbnail.png" style="width: 30px; height:30px;">';
+                  str+='<div style="position: relative; top: -40px; left: 40px;" >';
+                  str+='<h5>'+n.noteContent+'</h5>';
+                  str+='<font color="gray">线索</font> <font color="gray">-</font> <b>${clue.fullname}-${clue.company}</b> <small style="color: gray;"> '+(n.editFlag==0?n.createTime:n.editTime)+' 由'+(n.editFlag==0?n.createBy:n.editBy)+'</small>';
+                  str+='<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;" >';
+                  str+='<a class="myHref" href="javascript:void(0);" onclick="edit()" ><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #FF0000;"></span></a>';
+                  str+='&nbsp;&nbsp;&nbsp;&nbsp;';
+                  str+='<a class="myHref" href="javascript:void(0);" onclick="remove()"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: #FF0000;"></span></a>';
+                  str+='</div>';
+                  str+='</div>';
+                    str+='</div>';
+                })
+                $("#show").html(str)
+
+
+            }
+
+        })
+
+
+    }
+
+     function showRaltation() {
+         $.ajax({
+             url:"workbench/clue/selectRelation.do",
+             data:{"clueId":'${clue.id}'},
+             dataType:"json",
+             type:"get",
+             success:function (reg) {
+
+                 var str=""
+                 $.each(reg,function (i,n) {
+
+                     str+='<tr>'
+                     str+='<td>'+n.name+'</td>'
+                     str+='<td>'+n.startDate+'</td>'
+                     str+='<td>'+n.endDate+'</td>'
+                     str+='<td>'+n.owner+'</td>'
+                     str+='<td><a href="javascript:void(0);" onclick="relation(\''+n.id+'\')" style="text-decoration: none;"><span class="glyphicon glyphicon-remove"></span>解除关联</a></td>'
+                     str+='</tr>'
+
+                 })
+                 $("#tbody").html(str)
+             }
+
+
+
+
+         })
+
+     }
+
+    function relation(id) {
+
+        $.ajax({
+
+            url:"workbench/clue/disassociate.do",
+            data:{
+                "id":id
+            },
+            dataType:"json",
+            type:"post",
+            success:function (reg) {
+
+                if (reg.flag){
+
+                    showRaltation()
+
+                } else{
+                    alert("解除失败")
+                }
+
+            }
+
+        })
+
+    }
 	
 </script>
+
+
 
 </head>
 <body>
@@ -75,7 +260,7 @@ request.getServerPort() + request.getContextPath() + "/";
 					<div class="btn-group" style="position: relative; top: 18%; left: 8px;">
 						<form class="form-inline" role="form">
 						  <div class="form-group has-feedback">
-						    <input type="text" class="form-control" style="width: 300px;" placeholder="请输入市场活动名称，支持模糊查询">
+						    <input type="text" class="form-control"  id="aname" style="width: 300px;" placeholder="请输入市场活动名称，支持模糊查询">
 						    <span class="glyphicon glyphicon-search form-control-feedback"></span>
 						  </div>
 						</form>
@@ -91,8 +276,8 @@ request.getServerPort() + request.getContextPath() + "/";
 								<td></td>
 							</tr>
 						</thead>
-						<tbody>
-							<tr>
+						<tbody id="activity_tbody">
+							<%--<tr>
 								<td><input type="checkbox"/></td>
 								<td>发传单</td>
 								<td>2020-10-10</td>
@@ -105,173 +290,18 @@ request.getServerPort() + request.getContextPath() + "/";
 								<td>2020-10-10</td>
 								<td>2020-10-20</td>
 								<td>zhangsan</td>
-							</tr>
+							</tr>--%>
 						</tbody>
 					</table>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">关联</button>
+					<button type="button" class="btn btn-primary" id="relationBtn" data-dismiss="modal">关联</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
-    <!-- 修改线索的模态窗口 -->
-    <div class="modal fade" id="editClueModal" role="dialog">
-        <div class="modal-dialog" role="document" style="width: 90%;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                    <h4 class="modal-title" id="myModalLabel">修改线索</h4>
-                </div>
-                <div class="modal-body">
-                    <form class="form-horizontal" role="form">
-
-                        <div class="form-group">
-                            <label for="edit-clueOwner" class="col-sm-2 control-label">所有者<span style="font-size: 15px; color: red;">*</span></label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <select class="form-control" id="edit-clueOwner">
-                                    <option>zhangsan</option>
-                                    <option>lisi</option>
-                                    <option>wangwu</option>
-                                </select>
-                            </div>
-                            <label for="edit-company" class="col-sm-2 control-label">公司<span style="font-size: 15px; color: red;">*</span></label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-company" value="动力节点">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit-call" class="col-sm-2 control-label">称呼</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <select class="form-control" id="edit-call">
-                                    <option></option>
-                                    <option selected>先生</option>
-                                    <option>夫人</option>
-                                    <option>女士</option>
-                                    <option>博士</option>
-                                    <option>教授</option>
-                                </select>
-                            </div>
-                            <label for="edit-surname" class="col-sm-2 control-label">姓名<span style="font-size: 15px; color: red;">*</span></label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-surname" value="李四">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit-job" class="col-sm-2 control-label">职位</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-job" value="CTO">
-                            </div>
-                            <label for="edit-email" class="col-sm-2 control-label">邮箱</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-email" value="lisi@bjpowernode.com">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit-phone" class="col-sm-2 control-label">公司座机</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-phone" value="010-84846003">
-                            </div>
-                            <label for="edit-website" class="col-sm-2 control-label">公司网站</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-website" value="http://www.bjpowernode.com">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit-mphone" class="col-sm-2 control-label">手机</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <input type="text" class="form-control" id="edit-mphone" value="12345678901">
-                            </div>
-                            <label for="edit-status" class="col-sm-2 control-label">线索状态</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <select class="form-control" id="edit-status">
-                                    <option></option>
-                                    <option>试图联系</option>
-                                    <option>将来联系</option>
-                                    <option selected>已联系</option>
-                                    <option>虚假线索</option>
-                                    <option>丢失线索</option>
-                                    <option>未联系</option>
-                                    <option>需要条件</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit-source" class="col-sm-2 control-label">线索来源</label>
-                            <div class="col-sm-10" style="width: 300px;">
-                                <select class="form-control" id="edit-source">
-                                    <option></option>
-                                    <option selected>广告</option>
-                                    <option>推销电话</option>
-                                    <option>员工介绍</option>
-                                    <option>外部介绍</option>
-                                    <option>在线商场</option>
-                                    <option>合作伙伴</option>
-                                    <option>公开媒介</option>
-                                    <option>销售邮件</option>
-                                    <option>合作伙伴研讨会</option>
-                                    <option>内部研讨会</option>
-                                    <option>交易会</option>
-                                    <option>web下载</option>
-                                    <option>web调研</option>
-                                    <option>聊天</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="edit-describe" class="col-sm-2 control-label">描述</label>
-                            <div class="col-sm-10" style="width: 81%;">
-                                <textarea class="form-control" rows="3" id="edit-describe">这是一条线索的描述信息</textarea>
-                            </div>
-                        </div>
-
-                        <div style="height: 1px; width: 103%; background-color: #D5D5D5; left: -13px; position: relative;"></div>
-
-                        <div style="position: relative;top: 15px;">
-                            <div class="form-group">
-                                <label for="edit-contactSummary" class="col-sm-2 control-label">联系纪要</label>
-                                <div class="col-sm-10" style="width: 81%;">
-                                    <textarea class="form-control" rows="3" id="edit-contactSummary">这个线索即将被转换</textarea>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-nextContactTime" class="col-sm-2 control-label">下次联系时间</label>
-                                <div class="col-sm-10" style="width: 300px;">
-                                    <input type="text" class="form-control" id="edit-nextContactTime" value="2017-05-01">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="height: 1px; width: 103%; background-color: #D5D5D5; left: -13px; position: relative; top : 10px;"></div>
-
-                        <div style="position: relative;top: 20px;">
-                            <div class="form-group">
-                                <label for="edit-address" class="col-sm-2 control-label">详细地址</label>
-                                <div class="col-sm-10" style="width: 81%;">
-                                    <textarea class="form-control" rows="1" id="edit-address">北京大兴区大族企业湾</textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">更新</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 	<!-- 返回按钮 -->
 	<div style="position: relative; top: 35px; left: 10px;">
@@ -281,7 +311,7 @@ request.getServerPort() + request.getContextPath() + "/";
 	<!-- 大标题 -->
 	<div style="position: relative; left: 40px; top: -30px;">
 		<div class="page-header">
-			<h3>李四先生 <small>动力节点</small></h3>
+			<h3>${clue.fullname} <small>${clue.company}</small></h3>
 		</div>
 		<div style="position: relative; height: 50px; width: 500px;  top: -72px; left: 700px;">
 			<button type="button" class="btn btn-default" onclick="window.location.href='convert.html';"><span class="glyphicon glyphicon-retweet"></span> 转换</button>
@@ -294,59 +324,62 @@ request.getServerPort() + request.getContextPath() + "/";
 	<div style="position: relative; top: -70px;">
 		<div style="position: relative; left: 40px; height: 30px;">
 			<div style="width: 300px; color: gray;">名称</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>李四先生</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${clue.fullname}</b></div>
 			<div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">所有者</div>
-			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>zhangsan</b></div>
+			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>${clue.owner}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 10px;">
 			<div style="width: 300px; color: gray;">公司</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>动力节点</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${clue.company}</b></div>
 			<div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">职位</div>
-			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>CTO</b></div>
+			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>${clue.job}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 20px;">
 			<div style="width: 300px; color: gray;">邮箱</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>lisi@bjpowernode.com</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${clue.email}</b></div>
 			<div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">公司座机</div>
-			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>010-84846003</b></div>
+			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>${clue.phone}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 30px;">
 			<div style="width: 300px; color: gray;">公司网站</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>http://www.bjpowernode.com</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${clue.website}</b></div>
 			<div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">手机</div>
-			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>12345678901</b></div>
+			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>${clue.mphone}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 40px;">
 			<div style="width: 300px; color: gray;">线索状态</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>已联系</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${clue.state}</b></div>
 			<div style="width: 300px;position: relative; left: 450px; top: -40px; color: gray;">线索来源</div>
-			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>广告</b></div>
+			<div style="width: 300px;position: relative; left: 650px; top: -60px;"><b>${clue.source}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px;"></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -60px; left: 450px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 50px;">
 			<div style="width: 300px; color: gray;">创建者</div>
-			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b>zhangsan&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;">2017-01-18 10:10:10</small></div>
+			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b>${clue.createBy}&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;">${clue.createTime}</small></div>
 			<div style="height: 1px; width: 550px; background: #D5D5D5; position: relative; top: -20px;"></div>
 		</div>
+
+        <c:if test="${clue.editBy!=null}">
 		<div style="position: relative; left: 40px; height: 30px; top: 60px;">
 			<div style="width: 300px; color: gray;">修改者</div>
-			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b>zhangsan&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;">2017-01-19 10:10:10</small></div>
+			<div style="width: 500px;position: relative; left: 200px; top: -20px;"><b>${clue.editBy}&nbsp;&nbsp;</b><small style="font-size: 10px; color: gray;">${clue.editTime}</small></div>
 			<div style="height: 1px; width: 550px; background: #D5D5D5; position: relative; top: -20px;"></div>
 		</div>
+        </c:if>
 		<div style="position: relative; left: 40px; height: 30px; top: 70px;">
 			<div style="width: 300px; color: gray;">描述</div>
 			<div style="width: 630px;position: relative; left: 200px; top: -20px;">
 				<b>
-					这是一条线索的描述信息
+					${clue.description}
 				</b>
 			</div>
 			<div style="height: 1px; width: 850px; background: #D5D5D5; position: relative; top: -20px;"></div>
@@ -355,21 +388,21 @@ request.getServerPort() + request.getContextPath() + "/";
 			<div style="width: 300px; color: gray;">联系纪要</div>
 			<div style="width: 630px;position: relative; left: 200px; top: -20px;">
 				<b>
-					这条线索即将被转换
+                    ${clue.contactSummary}
 				</b>
 			</div>
 			<div style="height: 1px; width: 850px; background: #D5D5D5; position: relative; top: -20px;"></div>
 		</div>
 		<div style="position: relative; left: 40px; height: 30px; top: 90px;">
 			<div style="width: 300px; color: gray;">下次联系时间</div>
-			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>2017-05-01</b></div>
+			<div style="width: 300px;position: relative; left: 200px; top: -20px;"><b>${clue.nextContactTime}</b></div>
 			<div style="height: 1px; width: 400px; background: #D5D5D5; position: relative; top: -20px; "></div>
 		</div>
         <div style="position: relative; left: 40px; height: 30px; top: 100px;">
             <div style="width: 300px; color: gray;">详细地址</div>
             <div style="width: 630px;position: relative; left: 200px; top: -20px;">
                 <b>
-                    北京大兴大族企业湾
+                    ${clue.address}
                 </b>
             </div>
             <div style="height: 1px; width: 850px; background: #D5D5D5; position: relative; top: -20px;"></div>
@@ -377,39 +410,20 @@ request.getServerPort() + request.getContextPath() + "/";
 	</div>
 	
 	<!-- 备注 -->
-	<div style="position: relative; top: 40px; left: 40px;">
+	<div style="position: relative; top: 40px; left: 40px;" id="remarkBody">
 		<div class="page-header">
 			<h4>备注</h4>
 		</div>
-		
-		<!-- 备注1 -->
-		<div class="remarkDiv" style="height: 60px;">
-			<img title="zhangsan" src="image/user-thumbnail.png" style="width: 30px; height:30px;">
-			<div style="position: relative; top: -40px; left: 40px;" >
-				<h5>哎呦！</h5>
-				<font color="gray">线索</font> <font color="gray">-</font> <b>李四先生-动力节点</b> <small style="color: gray;"> 2017-01-22 10:10:10 由zhangsan</small>
-				<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">
-					<a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #E6E6E6;"></span></a>
-					&nbsp;&nbsp;&nbsp;&nbsp;
-					<a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: #E6E6E6;"></span></a>
-				</div>
-			</div>
-		</div>
-		
-		<!-- 备注2 -->
-		<div class="remarkDiv" style="height: 60px;">
-			<img title="zhangsan" src="image/user-thumbnail.png" style="width: 30px; height:30px;">
-			<div style="position: relative; top: -40px; left: 40px;" >
-				<h5>呵呵！</h5>
-				<font color="gray">线索</font> <font color="gray">-</font> <b>李四先生-动力节点</b> <small style="color: gray;"> 2017-01-22 10:20:10 由zhangsan</small>
-				<div style="position: relative; left: 500px; top: -30px; height: 30px; width: 100px; display: none;">
-					<a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-edit" style="font-size: 20px; color: #E6E6E6;"></span></a>
-					&nbsp;&nbsp;&nbsp;&nbsp;
-					<a class="myHref" href="javascript:void(0);"><span class="glyphicon glyphicon-remove" style="font-size: 20px; color: #E6E6E6;"></span></a>
-				</div>
-			</div>
-		</div>
-		
+
+
+
+        <div id="show">
+
+        </div>
+
+
+
+
 		<div id="remarkDiv" style="background-color: #E6E6E6; width: 870px; height: 90px;">
 			<form role="form" style="position: relative;top: 10px; left: 10px;">
 				<textarea id="remark" class="form-control" style="width: 850px; resize : none;" rows="2"  placeholder="添加备注..."></textarea>
@@ -438,8 +452,8 @@ request.getServerPort() + request.getContextPath() + "/";
 							<td></td>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
+					<tbody id="tbody">
+<%--						<tr>
 							<td>发传单</td>
 							<td>2020-10-10</td>
 							<td>2020-10-20</td>
@@ -452,7 +466,7 @@ request.getServerPort() + request.getContextPath() + "/";
 							<td>2020-10-20</td>
 							<td>zhangsan</td>
 							<td><a href="javascript:void(0);"  style="text-decoration: none;"><span class="glyphicon glyphicon-remove"></span>解除关联</a></td>
-						</tr>
+						</tr>--%>
 					</tbody>
 				</table>
 			</div>

@@ -188,7 +188,7 @@ request.getServerPort() + request.getContextPath() + "/";
             dataType:"json",
             type:"get",
             success:function (reg) {
-                ';'
+
                 <!-- 备注1 -->';'
                 var str="" ;
                 $.each(reg,function (i,n) {

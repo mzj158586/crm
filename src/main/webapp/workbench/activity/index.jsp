@@ -180,7 +180,7 @@ request.getServerPort() + request.getContextPath() + "/";
                 alert("未勾选")
             }else{
 
-                id=$(id).val()
+                alert(id)
                 $.ajax({
 
                     url:"workbench/activity/selectById.do",

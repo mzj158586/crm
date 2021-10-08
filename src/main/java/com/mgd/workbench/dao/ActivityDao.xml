@@ -88,6 +88,17 @@
         join tbl_user u on a.owner=u.id where a.id=#{id}
     </select>
 
+    <select id="selectRelation" resultType="com.mgd.workbench.domain.Activity">
+
+        select ac.id as id ,a.name,a.startDate,a.endDate,u.name as owner from tbl_activity a join tbl_user u on a.owner=u.id join tbl_clue_activity_relation ac  on  ac.activityId=a.id where ac.clueId=#{clueId}
+
+    </select>
+
+    <select id="getActivityByName" resultType="com.mgd.workbench.domain.Activity">
+
+        select a.id,a.name,u.name as owner,a.startDate,a.endDate from tbl_activity a join tbl_user u on a.owner=u.id where a.name like "%" #{activityName} "%" and a.id  not in (select  activityId from tbl_clue_activity_relation where clueId=#{clueId})
+
+    </select>
 
 
 </mapper>

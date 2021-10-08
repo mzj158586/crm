@@ -67,7 +67,6 @@ public class ActivityController {
     @RequestMapping("/selectPageList")
     @ResponseBody
     public PageInfo selectPageList(ActivityVo activityVo){
-        System.out.println(activityVo);
 
         PageInfo pageInfo = activityService.selectPageList(activityVo);
 

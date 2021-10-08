@@ -50,10 +50,6 @@ public class ActivityServiceImpl implements ActivityService {
     public PageInfo selectPageList(ActivityVo activityVo) {
         PageHelper.startPage(activityVo.getPageNo(),activityVo.getPageSize());
         List<Activity> activities = activityDao.selectPageList(activityVo);
-        for (Activity a :activities
-                ) {
-            System.out.println(a);
-        }
         PageInfo info = new PageInfo(activities);
 
         return info ;

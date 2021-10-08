@@ -4,7 +4,101 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.mgd.workbench.dao.ClueDao">
-	
+
+    <insert id="savaClue">
+
+        insert into tbl_clue (id,fullname,appellation,owner,company,job,email,phone,website,mphone,state,source,createBy,createTime,description,contactSummary,nextContactTime,address)
+        values (#{id},#{fullname},#{appellation},#{owner},#{company},#{job},#{email},#{phone},#{website},#{mphone},#{state},#{source},#{createBy},#{createTime},#{description},#{contactSummary},#{nextContactTime},#{address});
+
+
+    </insert>
+    <select id="selectPageList" resultType="com.mgd.workbench.domain.Clue">
+
+        select cl.id, cl.fullname,cl.company,cl.mphone,cl.phone,cl.source,u.name as owner,cl.state from tbl_clue cl join tbl_user u on cl.owner=u.id
+
+        <where>
+
+            <if test="fullname!=null and fullname!=''">
+                and cl.fullname like "%" #{fullname} "%"
+
+            </if>
+
+            <if test="fullname!=null and fullname!=''">
+                and cl.fullname like "%" #{fullname} "%"
+
+            </if>
+
+            <if test="company!=null and company!=''">
+
+                and cl.company = #{company}
+
+            </if>
+
+            <if test="mphone!=null and mphone!=''" >
+
+                and cl.mphone=#{mphone}
+
+            </if>
+
+            <if test="phone!=null and phone!=''">
+
+                and cl.phone=#{phone}
+
+            </if>
+
+            <if test="source!=null and source!=''">
+
+                and cl.source =#{source}
+
+            </if>
+
+            <if test="state!=null and state!=''">
+
+                and cl.state=#{state}
+
+            </if>
+
+            <if test="owner!=null and owner!=''">
+
+                and u.name like "%" #{owner} "%"
+
+            </if>
+
+        </where>
+
+        order by cl.createTime desc
+
+
+    </select>
+
+    <select id="selectById" resultType="com.mgd.workbench.domain.Clue">
+
+        select * from tbl_clue where id=#{id}
+
+    </select>
+
+    <update id="updateClue">
+
+        update tbl_clue set fullname=#{fullname},appellation=#{appellation},owner=#{owner},company=#{company},job=#{job},email=#{email},phone=#{phone},website=#{website},mphone=#{mphone},state=#{state},source=#{source},editBy=#{editBy},editTime=#{editTime},description=#{description},contactSummary=#{contactSummary},nextContactTime=#{nextContactTime},address=#{address} where id=#{id}
+
+    </update>
+
+    <delete id="deleteClue">
+
+        delete from tbl_clue where id in
+        <foreach collection="array" item="id"  open="(" close=")" separator=",">
+
+            #{id}
+
+        </foreach>
+
+    </delete>
+
+    <select id="detailClue" resultType="com.mgd.workbench.domain.Clue">
+        select cl.id,cl.fullname,cl.appellation,u.name as owner,cl.company ,cl.job,cl.email,cl.phone,cl.website,cl.mphone,cl.state,cl.source,cl.createBy,cl.createTime,cl.editBy,cl.editTime,cl.description ,cl.contactSummary,cl.nextContactTime,cl.address from tbl_clue cl join tbl_user u on cl.owner=u.id where cl.id =#{id}
+
+
+    </select>
 	
   	
 </mapper>

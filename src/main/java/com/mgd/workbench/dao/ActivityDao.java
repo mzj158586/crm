@@ -4,6 +4,7 @@ import com.mgd.workbench.domain.Activity;
 import com.mgd.workbench.vo.ActivityVo;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -25,4 +26,9 @@ public interface ActivityDao {
     int updateActivity(Activity activity);
 
     Activity detail(String id);
+
+    List<Activity> selectRelation(String clueId);
+
+    List<Activity> getActivityByName(Map map);
+
 }
